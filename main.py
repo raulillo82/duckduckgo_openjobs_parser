@@ -30,6 +30,8 @@ def scrape_jobs_to_dict(html):
 
 def print_dict(mydict):
     pp=pprint()
+    print("'Job Title': 'Job Department'")
+    print()
     pp.pprint(jobs_dict)
 
 URL = "https://duckduckgo.com/hiring"
