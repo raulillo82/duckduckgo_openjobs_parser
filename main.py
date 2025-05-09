@@ -4,6 +4,8 @@ from selenium.webdriver.firefox.options import Options as OptionsFirefox
 from time import sleep
 from bs4 import BeautifulSoup
 from pprint import PrettyPrinter as pprint
+import requests
+from auth import TELEGRAM_BOT_CHATID, TELEGRAM_BOT_TOKEN
 
 def get_javascript_rendered_site(url, driver="Firefox"):
     if driver=="Firefox":
@@ -44,7 +46,39 @@ def print_dict(mydict):
     print()
     pp.pprint(jobs_dict)
 
+def check_job_in_dict(jobs_dict, job_filter):
+    found = False
+    for string in job_filter:
+        if string in '\t'.join([key.lower() for key in jobs_dict.keys()]):
+            found = True
+            break
+    return found
+
+def telegram_bot_sendtext(jobs_dict):
+    """Sends the text message passed as parameter to the telegram bot.
+    Returns the response code"""
+    message="Duck Duck Go open vacancy found with desired filter!\n"
+    message+="Full list of jobs:\n"
+    message+="'Job Title' - 'Job Department'\n\n"
+    for job, department in jobs_dict.items():
+        message += f"{job} - {department}"
+        message += "\n"
+
+    params = {
+            "chat_id": TELEGRAM_BOT_CHATID,
+            "text": message,
+            "parse_mode": "MARKDOWN",
+            }
+    url = "https://api.telegram.org/bot" + TELEGRAM_BOT_TOKEN + "/sendMessage"
+    response = requests.get(url, params=params)
+    response.raise_for_status()
+    return response.json()
+
 URL = "https://duckduckgo.com/hiring"
+JOB_FILTER = ["cloud", "devops", "dev ops"]
 html = get_javascript_rendered_site(URL)
 jobs_dict = scrape_jobs_to_dict(html)
-print_dict(jobs_dict)
+#print_dict(jobs_dict)
+
+if check_job_in_dict(jobs_dict, JOB_FILTER):
+    telegram_bot_sendtext(jobs_dict)
