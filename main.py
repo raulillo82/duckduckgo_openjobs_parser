@@ -1,13 +1,23 @@
 from selenium import webdriver
-from selenium.webdriver.chrome.options import Options
+from selenium.webdriver.chrome.options import Options as OptionsChrome
+from selenium.webdriver.firefox.options import Options as OptionsFirefox
 from time import sleep
 from bs4 import BeautifulSoup
 from pprint import PrettyPrinter as pprint
 
-def get_javascript_rendered_site(url):
-    options = Options()
-    options.add_argument("--headless=new")
-    driver = webdriver.Chrome(options=options)
+def get_javascript_rendered_site(url, driver="Firefox"):
+    if driver=="Firefox":
+        options_firefox = OptionsFirefox()
+        options_firefox.add_argument("--headless")
+        driver = webdriver.Firefox(options=options_firefox)
+    elif driver=="Chrome":
+        options_chrome = OptionsChrome()
+        options_chrome.add_argument("--headless")
+        driver = webdriver.Chrome(options=options_chrome)
+    else:
+        print("Wrong browser selected, please use either 'Firefox' (default)" \
+                + " or 'Chrome' as arguments for this function")
+        exit(1)
     driver.get(url)
     sleep(1)
     html = driver.page_source
